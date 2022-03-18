@@ -1,24 +1,17 @@
 require 'open-uri'
 require 'net/http'
 require 'json'
+
 require 'faker'
 
+puts Faker::Name.name 
 
-#####
-# Note remember to use bundle exec rake db:seed:replant
-#####
+return 
 
-### NOTE - DELETE THIS AUTH KEY BEFORE PUSHING TO GH
 url = "https://developer.nps.gov/api/v1/parks?&limit=500&api_key=J0swua9odRTiY4Cl4HZPZ6vjzkgoSELSyisCq2wr"
 uri = URI.parse(url)
 response = Net::HTTP.get_response(uri)
 parsed = JSON.parse(response.body)
-
-puts "🌱 Seeding spices..."
-
-# Seed your database here
-
-
 
 # SEED THE PARKS TABLE 
 park_hashes = []
@@ -36,9 +29,56 @@ parsed["data"].each do |park|
     park_hashes << park_hash
 end 
 
-Park.create(park_hashes)
+#pp park_hashes
 
-# SEED THE ACTIVITIES TABLE
+# ACTIVITIES AT EACH PARK FOR JOIN TABLE
+
+#ParksActivity.create(park_id: 1)
+
+parks_activities = []
+
+parsed["data"].each do |park|
+    park["activities"].each do |act|
+        name = act["name"]
+        activity = Activity.find_or_create_by(name: name) #id
+        p = Park.find_or_create_by(name: park["fullName"]) 
+        ParksActivity.create(
+            {
+                park_id: p.id,
+                activity_id: activity.id
+            }
+        )
+
+ 
+    end
+end
+
+return 
+# This is an array of hashes with park name and activity name
+# Need to look up park id and activity id and create a table with those 
+
+
+ 
+ 
+#  park_id: parks.where(:name == park["fullName"])[:id],
+#  activity_id: activities.where(:name == act["name"])[:id]
+
+# ALL POSSIBLE ACTIVITIES (unique values)
+
+activities = []
+
+ parks_activities.each do |p_a| 
+    if !activities.include? p_a[:activity]
+        activities << p_a[:activity]
+    end 
+ end
+
+#  pp activities
+#  puts activities.count 
+#  puts "unique down from"
+#  puts parks_activities.count
+
+ ## CATEGORIES of activities 
 
 categories = [
     {
@@ -114,87 +154,5 @@ categories = [
         items: ["Mini-Golfing","Golfing","Team Sports","Canyoneering","Caving","Hands-On","Citizen Science","Volunteer Vacation","Orienteering","Compass and GPS","Geocaching","Gathering and Foraging"]
     }
 ]
-
-  activity_hashes = []
-
-  categories.each do |cat|
-    cat[:items].each do |item|
-      act_hash = {
-        name: item,
-        category: cat[:name]
-      }
-      activity_hashes << act_hash
-    end
-  end
-
-  Activity.create(activity_hashes)
-
-
-  # SEED USERS TABLE 
-50.times do 
-    name = Faker::Name.name 
-    while name[" "] do
-        name[" "] = "_"
-    end 
-
-    if name["."]
-        name["."] = ""
-    end
-
-    if name["'"]
-        name["'"] = ""
-    end
-
-    email = name + "@examplefakedomain.com"
-    User.create(
-        {
-            user_name: name,
-            user_email: email
-        }
-    )
-end
-
-
-#SEED PARKS ACTIVITIES 
-
-parks_activities = []
-
-parsed["data"].each do |park|
-    park["activities"].each do |act|
-        name = act["name"]
-        activity = Activity.find_or_create_by(name: name) #id
-        p = Park.find_or_create_by(name: park["fullName"]) 
-        ParksActivity.create(
-            {
-                park_id: p.id,
-                activity_id: activity.id
-            }
-        )
-
- 
-    end
-end
-
-
-#SEED REVIEWS
-
-sentence1 = ["Wow!!! ", "Amazing! ", "", "", "", "OMG! ", "Meh. ", "uhh... "]
-sentence2 = ["", "I visited once. ", "I went there years ago. ", "", "", "I've been so many times. ", "I live here now. ", "My regular party spot. "]
-sentence3 = ["",  "I saw a duck. ", "", "I saw a cat. ", "", "I saw a squirrel. ", "There were trees. ", "So many stars! "]
-sentence4 = ["I loved it!", "So cool!", "It was amazing!!", "It was great!", "Can't wait to come back.", "Glad to be home.", "This was weird.", "So, yeah..."]
-
-900.times do 
-    body = sentence1.sample + sentence2.sample + sentence3.sample + sentence4.sample
-    
-    Review.create(
-        park_id: rand(Park.minimum("id")..Park.maximum("id")),
-        user_id: rand(User.minimum("id")..User.maximum("id")),
-        review_text: body, 
-        likes: 0
-    )
-end 
-
-
-puts "✅ Done seeding!"
 
 

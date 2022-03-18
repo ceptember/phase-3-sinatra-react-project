@@ -1,5 +1,9 @@
 source "https://rubygems.org"
 
+# Used to generate seed data
+# https://github.com/faker-ruby/faker
+gem "faker", "~> 2.18"
+
 # A DSL for quickly creating web applications
 # https://github.com/sinatra/sinatra
 gem "sinatra", "~> 2.1"
