@@ -9,7 +9,7 @@ require 'faker'
 #####
 
 ### NOTE - DELETE THIS AUTH KEY BEFORE PUSHING TO GH
-url = "https://developer.nps.gov/api/v1/parks?&limit=500&api_key=J0swua9odRTiY4Cl4HZPZ6vjzkgoSELSyisCq2wr"
+url = ""
 uri = URI.parse(url)
 response = Net::HTTP.get_response(uri)
 parsed = JSON.parse(response.body)

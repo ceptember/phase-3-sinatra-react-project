@@ -11,28 +11,6 @@ class ApplicationController < Sinatra::Base
     parks.to_json
   end
 
-  get "/parks/filter/:activ_str" do
-    activ_arr = params[:activ_str].split(",")
-    parks = Park.all
-    results = []
-    parks.each do |p| #for each park object
-      if activ_arr - p.activities.map { |a| a.name } == [] 
-        results << p
-      end  
-    end 
-
-   #trying to end up with an array of parks objects
-   #parks.first.activities.to_json 
-   results_names = results.map { |r| r.name }
-   results_names.to_json
-  end
-
-  get "/parks/state/:locationString" do
-    state = params[:locationString]
-    parks = Park.all
-    results = parks.where(state: state)
-    results.to_json
-  end
 
 #####################################
 #  HERE IS THE COMBINED SEARCH THING
@@ -84,14 +62,9 @@ class ApplicationController < Sinatra::Base
 
    results.to_json
     
-   #Note the state and name are case-INsensitive but the activities are case SENSITIVE, need to fix
   end
 
-
  
-
-
-
 
 
   get "/parks/:id/activities" do 
