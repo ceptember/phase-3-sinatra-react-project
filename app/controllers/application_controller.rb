@@ -45,6 +45,7 @@ class ApplicationController < Sinatra::Base
 
     state_searched = ""
     name_searched = ""
+    activities_searched = ""
 
     # Doing it the long way because if these params aren't there we need to keep the variables = ""
     search_array.each do |x|
@@ -54,30 +55,43 @@ class ApplicationController < Sinatra::Base
       elsif x.include? "N="
         name_searched = search_array.filter { |x| x.include? "N=" }[0]
         name_searched.slice! "N="
+      
+      elsif x.include? "A="
+        activities_searched = search_array.filter { |x| x.include? "A=" }[0]
+        activities_searched.slice! "A="
       end
     end
 
+    #filter by name and state
+    results_name_state = Park.where(["name LIKE ? and state LIKE ?", "%"+name_searched+"%", "%"+state_searched+"%"])
 
-    
-    #state_searched = search_array.filter { |x| x.include? "S=" }[0]
-   # name_searched = search_array.filter { |x| x.include? "N=" }[0]
+    #filter the name and state results by activities
+    if activities_searched != ""
+      
+      activ_arr = activities_searched.split(",")
+      results = []
+      
 
-   # return state_searched.to_json
+      results_name_state.each do |p| #for each park object
+        if activ_arr - p.activities.map { |a| a.name } == [] 
+          results << p
+        end  
+      end 
 
-    #state_searched.slice! "S="
-    
-
-   # name_searched.slice! "N="
-
-    parks = Park.all
-    results = Park.where(["name LIKE ? and state LIKE ?", "%"+name_searched+"%", "%"+state_searched+"%"])
+    else
+      results = results_name_state
+    end
 
    results.to_json
-
+    
+   #Note the state and name are case-INsensitive but the activities are case SENSITIVE, need to fix
   end
 
 
  
+
+
+
 
 
   get "/parks/:id/activities" do 
