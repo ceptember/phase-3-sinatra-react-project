@@ -3,17 +3,32 @@ class ApplicationController < Sinatra::Base
   
   # Add your routes here
   get "/" do
-    { message: "Good luck with your project!" }.to_json
+    { message: "National Parks Finder" }.to_json
   end
 
   get "/parks" do 
     parks = Park.all
     parks.to_json
   end
+  
+  get "/parks/:id/activities" do 
+    park = Park.find(params[:id])
+    activities = park.activities
+    activities.to_json
+  end
 
+  get "/parks/:id/reviews" do
+    joined = User.left_outer_joins(:reviews).select('users.*,reviews.*').where('reviews.park_id == ' + params[:id])
+    joined.to_json
+  end
+
+  get "/reviews" do
+    joined = User.left_outer_joins(:reviews).select('users.*,reviews.*')
+    joined.to_json
+  end
 
 #####################################
-#  HERE IS THE COMBINED SEARCH THING
+#  HERE IS THE COMBINED SEARCH FILTER
 #####################################
 
   get "/parks/search/:searchString" do
@@ -25,7 +40,6 @@ class ApplicationController < Sinatra::Base
     name_searched = ""
     activities_searched = ""
 
-    # Doing it the long way because if these params aren't there we need to keep the variables = ""
     search_array.each do |x|
       if x.include? "S="
         state_searched = search_array.filter { |x| x.include? "S=" }[0]
@@ -49,7 +63,6 @@ class ApplicationController < Sinatra::Base
       activ_arr = activities_searched.split(",")
       results = []
       
-
       results_name_state.each do |p| #for each park object
         if activ_arr - p.activities.map { |a| a.name } == [] 
           results << p
@@ -64,26 +77,10 @@ class ApplicationController < Sinatra::Base
     
   end
 
- 
 
-
-  get "/parks/:id/activities" do 
-    park = Park.find(params[:id])
-    activities = park.activities
-    activities.to_json
-  end
-
-  get "/parks/:id/reviews" do
-    park = Park.find(params[:id])
-    reviews = park.reviews
-    reviews.to_json
-  end
-
-
-  get "/reviews" do
-    reviews = Review.all
-    reviews.to_json
-  end
+###################################
+# Post, Delete, and Edit Reviews 
+###################################
 
   post "/reviews" do
     review = Review.create(
@@ -104,7 +101,7 @@ class ApplicationController < Sinatra::Base
   patch "/reviews/:id" do
     review = Review.find(params[:id])
     review.update(
-      likes: params[:likes]
+      review_text: params[:review_text]
     )
     review.to_json
   end
