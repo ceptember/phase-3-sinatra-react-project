@@ -3,21 +3,18 @@ require 'net/http'
 require 'json'
 require 'faker'
 
+#################################################################################################
+#NOTE - ADD YOUR AUTHENTICATION KEY FROM https://www.nps.gov/subjects/developer/get-started.htm
+# USE THIS TO SEED THE TABLES AND DELETE THE KEY BEFORE PUSHING TO GITHUB
+##################################################################################################
 
-#####
-# Note remember to use bundle exec rake db:seed:replant
-#####
-
-### NOTE - DELETE THIS AUTH KEY BEFORE PUSHING TO GH
-url = ""
+auth = "" # <~~ YOUR API KEY
+url = """https://developer.nps.gov/api/v1/parks?&limit=500&api_key=" + auth
 uri = URI.parse(url)
 response = Net::HTTP.get_response(uri)
 parsed = JSON.parse(response.body)
 
 puts "🌱 Seeding spices..."
-
-# Seed your database here
-
 
 
 # SEED THE PARKS TABLE 
