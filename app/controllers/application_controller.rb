@@ -17,15 +17,18 @@ class ApplicationController < Sinatra::Base
     activities.to_json
   end
 
+############
+# JOINS
+#############
+
   get "/parks/:id/reviews" do
-    #inner join
     joined = User.joins(:reviews).select('users.*,reviews.*').where('reviews.park_id == ' + params[:id]) 
     joined.to_json
   end
 
   get "/reviews" do
-    joined = User.left_outer_joins(:reviews).select('users.*,reviews.*')
-    joined.to_json
+   joined = User.joins(:reviews).select('users.*,reviews.*')
+   joined.to_json
   end
 
 #####################################
